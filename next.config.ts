@@ -10,22 +10,12 @@ const withPWA = require("@ducanh2912/next-pwa").default({
 
 const nextConfig: NextConfig = {
   /* config options here */
-  output: 'standalone',
-  // Note: eslint options are removed as they are no longer supported in next.config.ts
+  // output: 'standalone', // Commented out for Vercel deployment
   typescript: {
     ignoreBuildErrors: true,
   },
   // Ensure trailing slashes are handled correctly
   trailingSlash: false,
-  async redirects() {
-    return [
-      {
-        source: '/',
-        destination: '/a/client',
-        permanent: false,
-      },
-    ];
-  },
 };
 
 export default withPWA(nextConfig);
