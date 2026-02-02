@@ -6,8 +6,6 @@ const withPWA = require("@ducanh2912/next-pwa").default({
   register: true,
   skipWaiting: true,
   importScripts: ["/sw-custom.js"],
-  // Fix for Vercel/Netlify 404 on /
-  buildExcludes: [/middleware-manifest\.json$/],
 });
 
 const nextConfig: NextConfig = {
@@ -18,6 +16,17 @@ const nextConfig: NextConfig = {
   },
   typescript: {
     ignoreBuildErrors: true,
+  },
+  // Ensure trailing slashes are handled correctly
+  trailingSlash: false,
+  async redirects() {
+    return [
+      {
+        source: '/',
+        destination: '/a/client',
+        permanent: false,
+      },
+    ];
   },
 };
 
