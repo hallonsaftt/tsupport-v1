@@ -1,0 +1,229 @@
+# SupportPWA - Detailed Product Requirements Document (PRD)
+
+**Version**: 1.0  
+**Date**: February 2, 2026  
+**Status**: Ready for Development  
+**Primary Stakeholder**: Tech Entrepreneur (Serbia/Germany)  
+**Tech Preferences**: Next.js, Supabase, Tailwind, shadcn/ui, PWA focus
+
+***
+
+## 1. Executive Summary
+
+**SupportPWA** is a **Progressive Web App (PWA)** customer support system designed as a **100% free alternative to Tidio**. Key differentiators:
+
+- **Single domain deployment**: `/a/client` (customer widget) + `/a/dashboard` (admin PWA)
+- **Phone-first admin experience**: Installable PWA with push notifications
+- **Token-based access**: Customers use unique IDs from `IDS.json`
+- **Multi-agent support**: Admin assigns agents (Nikola, Petar, Emilija) dynamically
+- **Real-time everything**: Chat, agent status, typing indicators, push notifications
+- **Shareable transcripts**: Every closed chat gets unique public link
+
+**Primary Goal**: Replace expensive Tidio with custom solution costing $0/month
+
+***
+
+## 2. Target Users & Personas
+
+### 2.1 Customer (Visitor)
+- **Goal**: Get support by entering their unique ID
+- **Pain Points**: Confusing support forms, no real-time response
+- **Success**: Chat starts immediately, sees agent join/leave, gets transcript link
+
+### 2.2 Admin/Agents (You + Team)
+- **Goal**: Manage multiple chats from phone (PWA), get instant notifications
+- **Pain Points**: Tidio expensive, no offline access, poor mobile experience
+- **Success**: Install PWA on phone → receive push → handle chat → close with transcript
+
+***
+
+## 3. Functional Requirements
+
+### 3.1 Customer Journey (`/a/client`)
+```
+1. LANDING: Clean form - "Enter Your Support ID" + "Subject" + "Email/Name"
+2. VALIDATION: Check ID exists → show error or start chat
+3. CHAT SESSION: Real-time messaging, agent status badges
+4. AGENT ACTIONS: See "Nikola joined", "Petar typing...", "Chat closed"
+5. COMPLETION: Generate shareable transcript `/a/chat/[uniqueId]`
+```
+
+### 3.2 Admin Dashboard (`/a/dashboard` - PWA)
+```
+1. LOGIN: Email/password → protected dashboard
+2. DASHBOARD VIEW: 
+   - Active chats (real-time list)
+   - Closed chats (paginated history)
+   - Search by ID/subject
+3. CHAT DETAIL:
+   - Full conversation history
+   - Agent selector dropdown
+   - Send message/close chat
+4. PUSH NOTIFICATIONS: "New chat ID:123 - Subject: Payment issue"
+5. SETTINGS: Add/edit agent names (Nikola, Petar, Emilija...)
+```
+
+### 3.3 Core Features Priority
+| Feature | Priority | Status |
+|---------|----------|--------|
+| Real-time chat | P0 Critical | Required |
+| PWA install + push | P0 Critical | Required |
+| ID validation | P0 Critical | Required |
+| Multi-agent | P1 High | Required |
+| Chat transcripts | P1 High | Required |
+| Pagination (20/page) | P2 Medium | Required |
+| Offline dashboard | P3 Low | Nice-to-have |
+
+***
+
+## 4. Non-Functional Requirements
+
+### 4.1 Performance
+- **Page Load**: <2 seconds (Next.js App Router)
+- **Realtime Latency**: <500ms message delivery
+- **Bundle Size**: <100KB gzipped
+- **Pagination**: Infinite scroll or 20/page
+
+### 4.2 Security
+```
+XSS Protection: Sanitize all user input
+CSRF Protection: Supabase auth tokens
+Rate Limiting: 10 req/min per IP
+Data Validation: Backend field validation
+RLS Policies: Admin-only dashboard access
+No SQL Injection: Supabase Postgres prepared statements
+```
+
+### 4.3 PWA Requirements (MANDATORY)
+```
+Manifest: "Support Admin" - 192x192 icons, theme_color
+Service Worker: Offline dashboard, background push
+Push Notifications: VAPID keys, "New chat" alerts
+Install Prompt: Android/iOS compatible
+```
+
+### 4.4 Accessibility
+- Keyboard navigation (shadcn components)
+- Screen reader support (ARIA labels)
+- High contrast mode
+- Dark/light theme toggle
+
+***
+
+## 5. User Interface Guidelines
+
+### 5.1 Design System: shadcn/ui + Tailwind
+```
+Primary Color: Blue (#3B82F6)
+Typography: Inter font
+Components:
+  - ChatWindow: WhatsApp-style bubbles
+  - DataTable: Chat overview with status badges
+  - DropdownMenu: Agent selector
+  - Badge: Active/Green, Closed/Gray
+  - Button: Primary/Secondary variants
+```
+
+### 5.2 Mobile-First (PWA Priority)
+- **Phone Layout**: Full-screen dashboard
+- **Tablet**: Split view (chat list + active chat)
+- **Desktop**: 3-column (chats/settings/active chat)
+
+### 5.3 Key Screens
+```
+1. /a/client: Single column chat widget
+2. /a/dashboard: Chat list + search + pagination  
+3. Chat Detail: Message history + agent selector + controls
+4. Settings: Agent management modal
+5. Transcript: Public read-only chat view
+```
+
+***
+
+## 6. Technical Architecture
+
+### 6.1 Technology Stack
+```
+Frontend: Next.js 15+ App Router, TypeScript
+UI: Tailwind CSS v4, shadcn/ui components
+Backend: Supabase Postgres + Realtime + Auth + Edge Functions
+Deployment: Vercel (frontend) + Supabase (backend)
+Monitoring: Vercel Analytics + Supabase logs
+```
+
+### 6.2 Data Flow
+```
+Customer → /a/client → Supabase.insert(chat) → Realtime Broadcast
+Admin → /a/dashboard → Supabase subscription → Push via Edge Function
+Agent Join → Supabase Presence → All clients see "Nikola joined"
+Chat Close → Generate transcript URL → Store in chat record
+```
+
+### 6.3 Deployment Requirements
+```
+1. Vercel: Automatic PWA + preview deployments
+2. Supabase: Free tier (unlimited realtime)
+3. Domain: yourdomain.com/a/* routes
+4. IDS.json: Static file → database seed on deploy
+```
+
+***
+
+## 7. Success Metrics & Testing
+
+### 7.1 Acceptance Criteria
+```
+✅ Customer enters valid ID → chat starts <2s
+✅ Admin receives push notification on phone <5s  
+✅ Real-time messages appear instantly for both parties
+✅ PWA installs on Android/iOS, works offline
+✅ 3 agents can join same chat (status updates)
+✅ Transcript link works publicly (read-only)
+✅ XSS attempts fail (sanitized display)
+```
+
+### 7.2 Load Testing
+- 10 concurrent chats
+- 100 messages/minute
+- Push notifications to 5 devices
+
+***
+
+## 8. Timeline & Milestones
+
+| Phase | Duration | Deliverable |
+|-------|----------|-------------|
+| **Week 1** | 1 day | PWA customer widget + ID validation |
+| | 1 day | Admin dashboard + realtime |
+| | 1 day | Push notifications + PWA |
+| **Week 2** | 1 day | Multi-agent + transcripts |
+| | 1 day | Security audit + polish |
+| | 1 day | Deploy + testing |
+
+**Total Development**: 6 days maximum
+
+***
+
+## 9. Cost Structure
+```
+Monthly Cost: $0 (Supabase/Vercel free tiers)
+Development Cost: 6 days engineering
+Maintenance: 1h/month monitoring
+Scale Cost: Supabase Pro $25/month (if needed)
+```
+
+***
+
+## 10. Future Enhancements (Post-MVP)
+```
+[ ] File uploads (images up to 5MB)
+[ ] Email notifications 
+[ ] Chat ratings (1-5 stars)
+[ ] Multiple departments
+[ ] AI auto-responses
+[ ] Analytics dashboard
+```
+
+***
+
+**This PRD is COMPLETE and READY for development. All requirements are prioritized, testable, and scoped for MVP delivery in 1 week. Next step: Copy to AI agent → Generate complete codebase → Deploy to Vercel.** [perplexity](https://www.perplexity.ai/search/ada6acf4-357d-4219-9cd3-ffc3bac85a17)
