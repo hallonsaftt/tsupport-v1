@@ -1,6 +1,18 @@
-import { redirect } from 'next/navigation'
+'use client'
+
+import { useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 
 export default function Home() {
-  // Use a client-side redirect approach if server-side is failing unexpectedly
-  redirect('/a/client')
+  const router = useRouter()
+
+  useEffect(() => {
+    router.push('/a/client')
+  }, [router])
+
+  return (
+    <div className="flex items-center justify-center min-h-screen">
+      <p>Redirecting to support...</p>
+    </div>
+  )
 }
