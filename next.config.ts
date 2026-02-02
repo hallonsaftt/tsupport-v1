@@ -11,9 +11,7 @@ const withPWA = require("@ducanh2912/next-pwa").default({
 const nextConfig: NextConfig = {
   /* config options here */
   output: 'standalone',
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
+  // Note: eslint options are removed as they are no longer supported in next.config.ts
   typescript: {
     ignoreBuildErrors: true,
   },
